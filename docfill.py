@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from config_reader import ConfigReader
 from docx_processor import DocxProcessor
+from directory_processor import DirectoryProcessor
 
 
 def main():
@@ -59,32 +60,52 @@ Examples:
     args = parser.parse_args()
     
     try:
-        # Validate input files
+        # Validate input files/dirs
         template_path = Path(args.template)
         config_path = Path(args.config)
-        
+
         if not template_path.exists():
-            print(f"Error: Template file not found: {args.template}", file=sys.stderr)
+            print(f"Error: Template path not found: {args.template}", file=sys.stderr)
             return 1
-        
+
         if not config_path.exists():
             print(f"Error: Config file not found: {args.config}", file=sys.stderr)
             return 1
-        
-        # Initialize processors
+
+        # Directory mode: process all .docx in a folder
+        if template_path.is_dir():
+            output_dir = Path(args.output) if args.output else (template_path / "output")
+            if args.verbose:
+                print(f"Directory mode detected. Input dir: {template_path}")
+                print(f"Output dir: {output_dir}")
+
+            dp = DirectoryProcessor()
+            dp.process_directory(
+                input_dir=template_path,
+                config_path=config_path,
+                output_dir=output_dir,
+                add_filled_suffix=True,
+                recursive=False,
+                verbose=args.verbose,
+            )
+
+            print(f"Templates filled successfully into: {output_dir}")
+            return 0
+
+        # File mode
         if args.verbose:
             print(f"Loading template: {template_path}")
             print(f"Loading config: {config_path}")
-        
+
         processor = DocxProcessor(template_path)
         reader = ConfigReader(config_path)
-        
+
         # Read configuration data
         config_data = reader.read()
-        
+
         if args.verbose:
             print(f"Loaded {len(config_data)} configuration items")
-        
+
         # Check placeholders mode
         if args.check_placeholders:
             placeholders = processor.get_placeholders()
