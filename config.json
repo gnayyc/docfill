@@ -1,0 +1,18 @@
+{
+  "name": "李四",
+  "date": "2024-08-19",
+  "city": "高雄市",
+  "department": "行銷部",
+  "position": "行銷專員",
+  "salary": "45000",
+  "company": {
+    "name": "XYZ行銷公司",
+    "address": "高雄市前鎮區中山二路100號",
+    "phone": "07-9876-5432"
+  },
+  "project": {
+    "name": "品牌推廣計畫",
+    "startDate": "2024-09-01",
+    "endDate": "2024-11-30"
+  }
+}
