@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Standalone FillDoc - DOCX Template Filler
+Standalone DocFill - DOCX Template Filler
 Single file version with all dependencies inline.
 
-Usage: python standalone_filldoc.py template.docx config.yaml
+Usage: python standalone_docfill.py template.docx config.yaml
 """
 
 import argparse
