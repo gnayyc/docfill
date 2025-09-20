@@ -25,6 +25,10 @@ class PdfProcessor:
             if self._check_libreoffice():
                 return "libreoffice"
 
+            # Try pandoc as backup (no permissions needed)
+            if self._check_pandoc():
+                return "pandoc"
+
             # Fallback to Word
             if platform.system() == "Windows":
                 try:
@@ -55,9 +59,13 @@ class PdfProcessor:
             except ImportError:
                 pass
 
-            # Fallback to LibreOffice (no permissions needed)
+            # Try LibreOffice (no permissions needed)
             if self._check_libreoffice():
                 return "libreoffice"
+
+            # Try pandoc as backup (no permissions needed, good quality)
+            if self._check_pandoc():
+                return "pandoc"
 
         return "none"
 
@@ -66,6 +74,19 @@ class PdfProcessor:
         try:
             result = subprocess.run(
                 ["libreoffice", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            return result.returncode == 0
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            return False
+
+    def _check_pandoc(self) -> bool:
+        """Check if Pandoc is available."""
+        try:
+            result = subprocess.run(
+                ["pandoc", "--version"],
                 capture_output=True,
                 text=True,
                 timeout=10
@@ -92,8 +113,10 @@ class PdfProcessor:
             return self._convert_with_word_com(docx_path, pdf_path)
         elif self.conversion_method == "docx2pdf":
             return self._convert_with_docx2pdf(docx_path, pdf_path)
+        elif self.conversion_method == "pandoc":
+            return self._convert_with_pandoc(docx_path, pdf_path)
         else:
-            raise RuntimeError("No PDF conversion method available. Install LibreOffice, python-docx2pdf, or use Windows with Word.")
+            raise RuntimeError("No PDF conversion method available. Install LibreOffice, Pandoc, python-docx2pdf, or use Windows with Word.")
 
     def _convert_with_libreoffice(self, docx_path: Path, pdf_path: Path) -> Path:
         """Convert using LibreOffice."""
@@ -179,6 +202,59 @@ class PdfProcessor:
                 raise RuntimeError(f"PDF conversion failed due to permissions. Please grant file access to Word in System Preferences > Security & Privacy > Files and Folders. Error: {e}")
             else:
                 raise RuntimeError(f"docx2pdf conversion failed: {e}")
+
+    def _convert_with_pandoc(self, docx_path: Path, pdf_path: Path) -> Path:
+        """Convert using Pandoc."""
+        try:
+            pdf_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Try different PDF engines in order of preference
+            pdf_engines = ["xelatex", "pdflatex", "wkhtmltopdf"]
+
+            for engine in pdf_engines:
+                try:
+                    result = subprocess.run([
+                        "pandoc",
+                        str(docx_path),
+                        "-o", str(pdf_path),
+                        f"--pdf-engine={engine}",
+                        "--quiet"
+                    ],
+                    capture_output=True,
+                    text=True,
+                    timeout=120
+                    )
+
+                    if result.returncode == 0:
+                        return pdf_path
+                    else:
+                        # If this engine failed, try the next one
+                        continue
+
+                except subprocess.TimeoutExpired:
+                    continue
+
+            # If all engines failed, try without specifying engine (use default)
+            result = subprocess.run([
+                "pandoc",
+                str(docx_path),
+                "-o", str(pdf_path),
+                "--quiet"
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120
+            )
+
+            if result.returncode != 0:
+                raise RuntimeError(f"Pandoc conversion failed: No suitable PDF engine found. Install LaTeX (xelatex/pdflatex) or wkhtmltopdf for better Pandoc PDF support. Error: {result.stderr}")
+
+            return pdf_path
+
+        except subprocess.TimeoutExpired:
+            raise RuntimeError("Pandoc conversion timed out")
+        except Exception as e:
+            raise RuntimeError(f"Pandoc conversion failed: {e}. Consider installing LaTeX or wkhtmltopdf for PDF support.")
 
     def get_available_method(self) -> str:
         """Get the name of available conversion method."""
