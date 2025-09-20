@@ -15,37 +15,49 @@ class DocxProcessor:
         if not self.template_path.exists():
             raise FileNotFoundError(f"Template file not found: {template_path}")
     
-    def fill_template(self, data: Dict[str, str], output_path: Union[str, Path]) -> None:
+    def fill_template(self, data: Dict[str, str], output_path: Union[str, Path], verbose: bool = False) -> None:
         """Fill template with data and save to output path."""
-        doc = Document(self.template_path)
+        try:
+            if verbose:
+                print(f"Opening template: {self.template_path}")
+            doc = Document(self.template_path)
+        except Exception as e:
+            raise RuntimeError(f"Failed to open template '{self.template_path}': {e}")
         
         # Process paragraphs
         for paragraph in doc.paragraphs:
-            self._replace_in_paragraph(paragraph, data)
-        
+            self._replace_in_paragraph(paragraph, data, verbose)
+
         # Process tables
         for table in doc.tables:
             for row in table.rows:
                 for cell in row.cells:
                     for paragraph in cell.paragraphs:
-                        self._replace_in_paragraph(paragraph, data)
-        
+                        self._replace_in_paragraph(paragraph, data, verbose)
+
         # Process headers and footers
         for section in doc.sections:
             # Process header
             if section.header:
                 for paragraph in section.header.paragraphs:
-                    self._replace_in_paragraph(paragraph, data)
-            
+                    self._replace_in_paragraph(paragraph, data, verbose)
+
             # Process footer
             if section.footer:
                 for paragraph in section.footer.paragraphs:
-                    self._replace_in_paragraph(paragraph, data)
+                    self._replace_in_paragraph(paragraph, data, verbose)
         
         # Save the document
-        doc.save(output_path)
+        try:
+            if verbose:
+                print(f"Saving to: {output_path}")
+            doc.save(output_path)
+            if verbose:
+                print(f"Successfully saved: {output_path}")
+        except Exception as e:
+            raise RuntimeError(f"Failed to save document to '{output_path}': {e}")
     
-    def _replace_in_paragraph(self, paragraph, data: Dict[str, str]) -> None:
+    def _replace_in_paragraph(self, paragraph, data: Dict[str, str], verbose: bool = False) -> None:
         """Replace placeholders in a paragraph while preserving formatting."""
         # First, try to handle the entire paragraph text in case placeholders span multiple runs
         full_text = paragraph.text
@@ -92,9 +104,9 @@ class DocxProcessor:
         
         if remaining_placeholders:
             # Advanced approach: reconstruct runs while preserving formatting
-            self._replace_across_runs(paragraph, remaining_placeholders, data)
+            self._replace_across_runs(paragraph, remaining_placeholders, data, verbose)
     
-    def _replace_across_runs(self, paragraph, placeholders, data):
+    def _replace_across_runs(self, paragraph, placeholders, data, verbose=False):
         """Replace placeholders that span across multiple runs while preserving formatting."""
         from docx.oxml.shared import qn
         from docx.shared import RGBColor
@@ -160,7 +172,8 @@ class DocxProcessor:
             if first_run_format.get('font_color'):
                 new_run.font.color.rgb = first_run_format['font_color']
             
-            print(f"Info: Replaced text across multiple runs, applied first run's formatting")
+            if verbose:
+                print(f"Info: Replaced text across multiple runs, applied first run's formatting")
     
     def get_placeholders(self) -> set:
         """Extract all placeholders from the template."""

@@ -5,9 +5,18 @@ description = "Fill DOCX templates with data from configuration files"
 # readme = "README.md"  # Temporarily disabled due to encoding
 requires-python = ">=3.9"
 dependencies = [
+    "docx2pdf>=0.1.8",
     "python-docx>=1.2.0",
     "pyyaml>=6.0.2",
     "tomli>=2.2.1",
+]
+
+[project.optional-dependencies]
+pdf = [
+    "docx2pdf>=0.1.8",
+]
+windows = [
+    "pywin32>=306",
 ]
 
 [project.scripts]
