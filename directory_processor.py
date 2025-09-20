@@ -27,7 +27,10 @@ class DirectoryProcessor:
             path.mkdir(parents=True, exist_ok=True)
     
     def find_docx_files(self, directory_path: Union[str, Path]) -> List[Path]:
-        """Find all DOCX files in the given directory, excluding temporary and system files."""
+        """Find all DOCX files in the given directory, excluding temporary and system files.
+
+        Returns files sorted by filename to ensure consistent processing order.
+        """
         path = Path(directory_path)
         files = list(path.glob("*.docx"))
 
@@ -46,6 +49,8 @@ class DirectoryProcessor:
                 continue
             filtered_files.append(file)
 
+        # Sort by filename to ensure consistent processing order
+        filtered_files.sort(key=lambda x: x.name)
         return filtered_files
 
     def process_directory(
@@ -87,10 +92,11 @@ class DirectoryProcessor:
             file_iter = []
             # Include root directory
             file_iter.extend(self.find_docx_files(in_path))
-            # Include subdirectories
-            for subdir in in_path.rglob("*"):
-                if subdir.is_dir() and subdir != in_path:
-                    file_iter.extend(self.find_docx_files(subdir))
+            # Include subdirectories in sorted order
+            subdirs = [subdir for subdir in in_path.rglob("*") if subdir.is_dir() and subdir != in_path]
+            subdirs.sort(key=lambda x: str(x))
+            for subdir in subdirs:
+                file_iter.extend(self.find_docx_files(subdir))
         else:
             file_iter = self.find_docx_files(in_path)
 
