@@ -19,7 +19,7 @@ class DocxProcessor:
         """Fill template with data and save to output path."""
         try:
             if verbose:
-                print(f"Opening template: {self.template_path}")
+                print(f"  Opening template: {self.template_path}")
             doc = Document(self.template_path)
         except Exception as e:
             raise RuntimeError(f"Failed to open template '{self.template_path}': {e}")
@@ -50,10 +50,10 @@ class DocxProcessor:
         # Save the document
         try:
             if verbose:
-                print(f"Saving to: {output_path}")
+                print(f"  Saving to: {output_path}")
             doc.save(output_path)
             if verbose:
-                print(f"Successfully saved: {output_path}")
+                print(f"  Successfully saved: {output_path}")
         except Exception as e:
             raise RuntimeError(f"Failed to save document to '{output_path}': {e}")
     
@@ -173,7 +173,8 @@ class DocxProcessor:
                 new_run.font.color.rgb = first_run_format['font_color']
             
             if verbose:
-                print(f"Info: Replaced text across multiple runs, applied first run's formatting")
+                replaced_placeholders = ", ".join([f"{{{{{p}}}}}" for p in placeholders])
+                print(f"  Info: Replaced {replaced_placeholders} across multiple runs, applied first run's formatting")
     
     def get_placeholders(self) -> set:
         """Extract all placeholders from the template."""
