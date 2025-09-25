@@ -71,6 +71,12 @@ Examples:
         action='store_true',
         help='Prefer LibreOffice for PDF conversion (avoids Word permissions but may have layout differences)'
     )
+
+    parser.add_argument(
+        '--pdf-dir',
+        type=str,
+        help='Directory for PDF output files (default: same as DOCX output)'
+    )
     
     args = parser.parse_args()
     
@@ -196,7 +202,16 @@ Examples:
 
                 for docx_file in all_output_files:
                     try:
-                        pdf_file = pdf_processor.convert_to_pdf(docx_file)
+                        if args.pdf_dir:
+                            # Use custom PDF directory
+                            pdf_dir = Path(args.pdf_dir)
+                            pdf_dir.mkdir(parents=True, exist_ok=True)
+                            pdf_filename = Path(docx_file).with_suffix('.pdf').name
+                            pdf_file = pdf_processor.convert_to_pdf(docx_file, pdf_dir / pdf_filename)
+                        else:
+                            # Use default location (same as DOCX)
+                            pdf_file = pdf_processor.convert_to_pdf(docx_file)
+
                         if args.verbose:
                             print(f"PDF created: {pdf_file}")
                     except Exception as e:
