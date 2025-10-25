@@ -1,0 +1,70 @@
+# 進階範例：專案報告
+# 示範 Jinja2 迴圈、條件判斷等進階功能
+
+# 基本資訊
+project_name: "AI 影像辨識系統"
+project_code: "AI-2024-001"
+date: "2024-10-23"
+manager: "張主任"
+
+# 團隊成員列表（將用於迴圈）
+team_members:
+  - name: "李工程師"
+    role: "技術負責人"
+    experience: 8
+    department: "研發部"
+  - name: "王設計師"
+    role: "UI/UX 設計"
+    experience: 5
+    department: "設計部"
+  - name: "陳分析師"
+    role: "資料分析"
+    experience: 6
+    department: "數據部"
+
+# 專案階段（將用於迴圈和條件判斷）
+milestones:
+  - phase: "需求分析"
+    status: "已完成"
+    completion: 100
+    date: "2024-08-01"
+  - phase: "系統設計"
+    status: "已完成"
+    completion: 100
+    date: "2024-09-01"
+  - phase: "開發實作"
+    status: "進行中"
+    completion: 75
+    date: "2024-10-15"
+  - phase: "測試驗證"
+    status: "待進行"
+    completion: 0
+    date: "2024-11-01"
+  - phase: "上線部署"
+    status: "待進行"
+    completion: 0
+    date: "2024-12-01"
+
+# 預算資訊
+budget:
+  total: 5000000
+  spent: 3750000
+  remaining: 1250000
+
+# 風險評估
+risks:
+  - risk: "技術挑戰"
+    level: "中"
+    mitigation: "增加技術顧問支援"
+  - risk: "時程壓力"
+    level: "高"
+    mitigation: "增派人力資源"
+  - risk: "預算控制"
+    level: "低"
+    mitigation: "每週預算審查"
+
+# 專案狀態（用於條件判斷）
+overall_progress: 75
+status: "正常"
+is_delayed: false
+needs_attention: true

@@ -65,3 +65,6 @@ AF10-008_*.docx
 
 # Logs
 *.log
+
+# User project directories
+projects/
